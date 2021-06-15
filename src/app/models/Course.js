@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const slug = require('mongoose-slug-generator');
-
-mongoose.plugin(slug);
+const mongooseDelete = require('mongoose-delete');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const Schema = mongoose.Schema;
 
 const Course = new Schema(
     {
+        _id: { type: Number, increment: true },
         name: { type: String, required: true },
         slug: { type: String, slug: 'name', unique: true },
         description: { type: String, maxLength: 600 },
@@ -15,8 +16,18 @@ const Course = new Schema(
         level: { type: String },
     },
     {
+        _id: false,
         timestamps: true,
     },
 );
+
+// Add plugins
+mongoose.plugin(slug);
+
+Course.plugin(AutoIncrement);
+Course.plugin(mongooseDelete, {
+    deletedAt: true,
+    overrideMethods: 'all',
+});
 
 module.exports = mongoose.model('Course', Course);
